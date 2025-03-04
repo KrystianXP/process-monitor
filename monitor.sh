@@ -2,15 +2,22 @@
 
 PROCESSES=("nginx" "mysql" "docker")
 
-LOG_FILE="./logs/process_monitor.log"
 
-echo "Czas | Proces | PID | CPU% | RAM%" >> "$LOG_FILE"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_DIR="$SCRIPT_DIR/logs"
+LOG_FILE="$LOG_DIR/process_monitor.log"
 
-for PROC in "${PROCESSES[@]}"; do 
+mkdir -p "$LOG_DIR"
+
+if [ ! -f "$LOG_FILE" ]; then
+    echo "Czas | Proces | PID | CPU% | RAM%" > "$LOG_FILE"
+fi
+
+for PROC in "${PROCESSES[@]}"; do
     PID=$(pgrep -x "$PROC")
 
-    if [ -n "$PID"]; then
-        CPU=$(ps -p "$PID" -o %cpu --no--headers | awk '{print $1}')
+    if [ -n "$PID" ]; then
+        CPU=$(ps -p "$PID" -o %cpu --no-headers | awk '{print $1}')
         MEM=$(ps -p "$PID" -o %mem --no-headers | awk '{print $1}')
         echo "$(date '+%Y-%m-%d %H:%M:%S') | $PROC | $PID | $CPU | $MEM" >> "$LOG_FILE"
     else
